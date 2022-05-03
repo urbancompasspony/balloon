@@ -1,0 +1,55 @@
+#!/bin/bash
+
+# ---------------------------------------------------------------------------- #
+# mem00 actual - balloon
+# mem01 available = usable (What balloon can take without swap)
+# mem02 free = unused
+# mem03 total (used + free + buff/cache) = available
+# ---------------------------------------------------------------------------- #
+
+# Vars
+minimal="25"
+maximal="35"
+parameter="50"
+
+log="/dev/null"
+
+if [[ $(which virt-manager 2>/dev/null) ]]; then
+  for i in $(virsh list --all | grep "running" | awk '{print $2}')
+  do
+
+    virsh dommemstat "$i" --period 1 ;
+
+    mem00=`virsh dommemstat "$i" | awk 'NR==1 { print $2 }'` ; echo "mem00 $mem00" > "$log" # Actual (balloon)
+    mem01=`virsh dommemstat "$i" | awk 'NR==8 { print $2 }'` ; echo "mem01 $mem01" > "$log" # Usable (to balloon catch)
+    
+    mem0A=`bc <<< "$mem00/1024"` ; echo "mem0A $mem0A" > "$log" # Convert Kb to Mb
+    mem0B=`bc <<< "$mem01/1024"` ; echo "mem0B $mem0B" > "$log" # Convert Kb to Mb
+
+    percent=`bc <<< "$mem0A/100"` ; echo "percent $percent" > "$log"
+    result=`bc <<< "$mem0B/$percent"` ; echo "result $result" > "$log"
+        
+    if [[ "$result" > "$minimal" ]] && [[ "$result" < "$maximal" ]];then
+      echo "Everything Ok." > "$log"
+    else
+      if [[ "$result" > "$maximal" ]];then
+        echo "Result > Maximal"
+        memX=`bc <<< "$mem0A-$parameter"` # Actual - 50
+        echo "memX $memX" > "$log"
+        virsh setmem "$i" "$memX"mb
+      else
+        if [[ "$result" < "$minimal" ]];then
+          echo "Result < Minimal"
+          memX=`bc <<< "$mem0A+$parameter"` # Actual + 50
+          echo "memX $memX" > "$log"
+          virsh setmem "$i" "$memX"mb
+        else
+          echo "NOT OK." > "$log"
+        fi
+      fi
+    fi
+    
+  done
+else
+  echo "Nothing to do here." > "$log"
+fi
