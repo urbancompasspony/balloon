@@ -1,7 +1,7 @@
 # auto-ballooning
 
-This code serve one purpose: Run an auto-balloon on QEMU/KVM virtualized systems!
-Does not work with KSM.
+This code serve one purpose: Run an auto-ballooning on QEMU/KVM virtualized systems!
+Does not works with KSM.
 
 # How it works?
 
