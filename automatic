@@ -7,11 +7,16 @@
 # mem03 total (used + free + buff/cache) = available
 # ---------------------------------------------------------------------------- #
 
-# Vars
+# Adjust this to the minimal amount of Usable RAM
 minimal="25"
+
+#Adjust this to the maximum amount of Usable RAM
 maximal="35"
+
+# Change this to how much RAM the Balloon gonna remove or add to VM (in Mb)
 parameter="50"
 
+# If you like log things, this is for you!
 log="/dev/null"
 
 if [[ $(which virt-manager 2>/dev/null) ]]; then
