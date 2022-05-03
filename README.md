@@ -1,4 +1,4 @@
-# balloon
+# auto-ballooning
 
 This code serve one purpose: Run an auto-balloon on QEMU/KVM virtualized systems!
 Does not work with KSM.
