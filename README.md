@@ -29,8 +29,11 @@ vm.swappiness=10
 Put this code where you want, give it permissions to execute and add on Crontab (not sudo crontab!) something like this:
 
 ***** sleep 15; bash /path/to/automatic
+
 ***** sleep 30; bash /path/to/automatic
+
 ***** sleep 45; bash /path/to/automatic
+
 ***** sleep 60; bash /path/to/automatic
 
 This will run the code automatically every 15 seconds to check if more or less RAM is needed!
