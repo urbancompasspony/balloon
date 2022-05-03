@@ -18,4 +18,4 @@ vm.swappiness=10
 
 Put this code where you want, give it permissions to execute and add on Crontab (not sudo crontab!) something like this:
 
-* * * * bash /path/to/automatic
+***** bash /path/to/automatic
