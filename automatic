@@ -22,24 +22,23 @@ for i in $(virsh list --all | grep "running" | awk '{print $2}')
 do
   virsh dommemstat "$i" --period 1 
 
-  mem00=$(virsh dommemstat $i | awk 'NR==1 { print $2 }')
-  mem01=$(virsh dommemstat $i | awk 'NR==8 { print $2 }')
+  mem00=$(virsh dommemstat "$i" | awk 'NR==1 { print $2 }')
+  mem01=$(virsh dommemstat "$i" | awk 'NR==8 { print $2 }')
 
-  mem0A=$(bc <<< "$mem00/1024")
-  mem0B=$(bc <<< "$mem01/1024")
+  mem0A=$(bc <<< "$mem00"/"1024")
+  mem0B=$(bc <<< "$mem01"/"1024")
 
-  percent=$(bc <<< "$mem0A/100")
-  result=$(bc <<< "$mem0B/$percent")
+  percent=$(bc <<< "$mem0A"/"100")
+  result=$(bc <<< "$mem0B"/"$percent")
 
 [ "$result" > "$maximal" ] && {
   memX=$(bc <<< "$mem0A"-"$addram")
   virsh setmem "$i" "$memX"mb
-  }
-
-[ "$result" < "$minimal" ] && {
+  echo $result 
+  } || [ "$result" < "$minimal" ] && {
+  echo $result
   memX=$(bc <<< "$mem0A"+"$addram")
   virsh setmem "$i" "$memX"mb
   }
-
 done
 }
