@@ -1,6 +1,6 @@
 # auto-ballooning
 
-This code serve one purpose: Run an auto-ballooning on QEMU/KVM virtualized systems!
+This code serves one purpose: Run an auto-ballooning on QEMU/KVM virtualized systems!
 Does not works with KSM.
 
 # How it works?
@@ -23,6 +23,9 @@ If the "usable" memory is between 25 and 35%, then everything is Ok!
 Adjust your swappiness inside VM to 10!
 Inside /etc/sysctl.conf put this line and reboot your VM:
 vm.swappiness=10
+
+If you would like to use swappiness different from 10, edit the minimum and maximum values inside the code.
+Is something like DIY until reach something useful, so use it in test ambience before using it in production.
 
 # How to run
 
