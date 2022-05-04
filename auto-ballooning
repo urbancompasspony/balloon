@@ -29,7 +29,7 @@ secs="2"
 # Change 0 to 1 to turn ON debug mode. 
 # Remember: When set to 1, the loop will turn OFF too.
 # Default if 0
-debug="0"
+debug="1"
 
 function start {
   [ $(which virt-manager 2>/dev/null) ] && {
@@ -55,7 +55,7 @@ function start {
         }
 
       [ "$result" -le "$minimal" ] && {
-        memX=$(bc <<< "$mem0A+$addram")
+        memX=$(bc <<< "$mem0A"+"$addram")
         virsh setmem "$i" "$memX"mb
         }
     }
@@ -82,4 +82,8 @@ while true; do
   sleep "$secs";
   start
 done
+}
+
+[ "$debug" = "1" ] && {
+  start
 }
