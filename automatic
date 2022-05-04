@@ -54,7 +54,7 @@ for i in $(virsh list --all | grep "running" | awk '{print $2}'); do
     echo "usable: $mem0B Mb"
     echo "actual/100: $percent"
     echo "[usable / (actual/100)]: $result % of $mem0A"
-  }
+    }
 
 done
 }
