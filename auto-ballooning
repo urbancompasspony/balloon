@@ -79,7 +79,7 @@ ERROR: We do not cover Windows yet. WIP!"
 
 [ "$debug" = "0" ] && {
 while true; do
-  sleep $secs;
+  sleep "$secs";
   start
 done
 }
