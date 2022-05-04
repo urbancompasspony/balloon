@@ -11,10 +11,12 @@
 # ---------------------------------------------------------------------------- #
 
 # Adjust this to the minimal amount of Usable RAM
-minimal="25"
+minimall="25" # For Linux VM
+minimalw="" # For Windows VM
 
 #Adjust this to the maximum amount of Usable RAM
-maximal="35"
+maximall="35"
+minimalw="" # For Windows VM
 
 # Change this to how much RAM the Balloon gonna remove or add to VM
 addram="50" # In Mb
@@ -36,16 +38,19 @@ for i in $(virsh list --all | grep "running" | awk '{print $2}'); do
   percent=$(bc <<< "$mem0A/100")
   result=$(bc <<< "$mem0B/$percent")
 
-  [ "$result" -ge "$maximal" ] && {
-    memX=$(bc <<< "$mem0A"-"$addram")
-    virsh setmem "$i" "$memX"mb
-    }
+  osinfo=$(virsh dumpxml "$i" | grep "microsoft" 1> /dev/null 2> /dev/null && echo "sim" || echo "nao")
 
-  [ "$result" -le "$minimal" ] && {
-    memX=$(bc <<< "$mem0A"+"$addram")
-    virsh setmem "$i" "$memX"mb
-    }
+  [ "$osinfo" = "nao" ] && {
+    [ "$result" -ge "$maximal" ] && {
+      memX=$(bc <<< "$mem0A"-"$addram")
+      virsh setmem "$i" "$memX"mb
+      }
 
+    [ "$result" -le "$minimal" ] && {
+      memX=$(bc <<< "$mem0A+$addram")
+      virsh setmem "$i" "$memX"mb
+      }
+  }
   [ "$debug" = "1" ] && {
     echo "VM Name: $i"
     echo "actual: $mem00 Kb"
@@ -54,6 +59,10 @@ for i in $(virsh list --all | grep "running" | awk '{print $2}'); do
     echo "usable: $mem0B Mb"
     echo "actual/100: $percent"
     echo "[usable / (actual/100)]: $result % of $mem0A"
+    [ "$osinfo" = "sim" ] && {
+      echo "
+ERROR: We do not cover Windows yet. WIP!"
+      }
     }
 
 done
