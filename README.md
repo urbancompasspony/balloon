@@ -34,6 +34,8 @@ Still a WIP!
 Inside /etc/sysctl.conf put this line and reboot your VM:
 vm.swappiness=10
 
+With this, the SWAP will be used just when 90% of RAM is being used, so this code will get RAM from VM if more than 35% is not being used, and giving back when less than 25% is being used; in pratical terms, with something around 75 to 85% of RAM inside VM.
+
 If you would like to use swappiness different from 10, edit the minimum and maximum values inside the code.
 Is something like DIY until reach something useful, so use it in test ambience before using it in production.
 
