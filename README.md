@@ -41,14 +41,9 @@ Is something like DIY until reach something useful, so use it in test ambience b
 
 # How to run
 
-Put this code where you want, give it permissions to execute and add on Crontab (not sudo crontab!) something like this:
+Put this code where you want, give it permissions to execute and add run it 1 time like this:
 
-***** sleep 15; bash /path/to/automatic
+$ bash /path/to/auto-ballooning &
 
-***** sleep 30; bash /path/to/automatic
-
-***** sleep 45; bash /path/to/automatic
-
-***** sleep 60; bash /path/to/automatic
-
-This will run the code automatically every 15 seconds to check if more or less RAM is needed!
+It will start a Loop and run the code before 5 seconds to check if more or less RAM is needed!
+Cron does not have the env variables to run this for itself. USer must run it.
