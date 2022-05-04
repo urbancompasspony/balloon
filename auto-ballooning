@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# auto-ballooning 1.0
+# auto-ballooning
 # By UrbanCompassPony
 
 # ---------------------------------------------------------------------------- #
@@ -11,16 +11,24 @@
 # ---------------------------------------------------------------------------- #
 
 # Adjust this to the minimal amount of Usable RAM
+# Default is 25
 minimal="25" # in %
 
 #Adjust this to the maximum amount of Usable RAM
+# Default is 35
 maximal="35" # in %
 
 # Change this to how much RAM the Balloon gonna remove or add to VM
+# Default if 50
 addram="50" # In Mb
+
+# Change this to a value, in seconds, the loop will run the script!
+# Default is 2
+secs="2"
 
 # Change 0 to 1 to turn ON debug mode. 
 # Remember: When set to 1, the loop will turn OFF too.
+# Default if 0
 debug="0"
 
 function start {
@@ -71,7 +79,7 @@ ERROR: We do not cover Windows yet. WIP!"
 
 [ "$debug" = "0" ] && {
 while true; do
-  sleep 2;
+  sleep $secs;
   start
 done
 }
