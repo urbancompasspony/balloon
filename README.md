@@ -3,7 +3,7 @@
 This code serves one purpose: 
 Run an auto-ballooning on QEMU/KVM virtualized systems!
 
-Does not works with KSM.
+Not works with KSM.
 
 # How it works?
 
