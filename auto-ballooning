@@ -19,7 +19,7 @@ minimal="25" # in %
 maximal="35" # in %
 
 # Change this to how much RAM the Balloon gonna remove or add to VM
-# Default if 50
+# Default is 50
 addram="50" # In Mb
 
 # Change this to a value, in seconds, the loop will run the script!
@@ -28,8 +28,8 @@ secs="2"
 
 # Change 0 to 1 to turn ON debug mode. 
 # Remember: When set to 1, the loop will turn OFF too.
-# Default if 0
-debug="1"
+# Default is 0
+debug="0"
 
 function start {
   [ $(which virt-manager 2>/dev/null) ] && {
