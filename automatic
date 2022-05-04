@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# auto-ballooning 1.0
+# By UrbanCompassPony
+
 # ---------------------------------------------------------------------------- #
 # mem00 actual - balloon
 # mem01 available = usable (What balloon can take without swap)
@@ -13,51 +16,45 @@ minimal="25"
 #Adjust this to the maximum amount of Usable RAM
 maximal="35"
 
-# Change this to how much RAM the Balloon gonna remove or add to VM (in Mb)
-addram="50"
+# Change this to how much RAM the Balloon gonna remove or add to VM
+addram="50" # In Mb
 
-# Debug Mode - Change 0 to 1 to turn on!
-debug="0"
+# Debug Mode - Change 0 to 1 to turn on and see everything!
+debug="1"
 
 [ $(which virt-manager 2>/dev/null) ] && {
 
 for i in $(virsh list --all | grep "running" | awk '{print $2}'); do
+  virsh dommemstat "$i" --period 1 
 
-virsh dommemstat "$i" --period 1 
+  mem00=$(virsh dommemstat "$i" | awk 'NR==1 { print $2 }')
+  mem01=$(virsh dommemstat "$i" | awk 'NR==8 { print $2 }')
 
-mem00=$(virsh dommemstat "$i" | awk 'NR==1 { print $2 }')
-mem01=$(virsh dommemstat "$i" | awk 'NR==8 { print $2 }')
+  mem0A=$(bc <<< "$mem00/1024")
+  mem0B=$(bc <<< "$mem01/1024")
 
-mem0A=$(bc <<< "$mem00/1024")
-mem0B=$(bc <<< "$mem01/1024")
+  percent=$(bc <<< "$mem0A/100")
+  result=$(bc <<< "$mem0B/$percent")
 
-percent=$(bc <<< "$mem0A/100")
-result=$(bc <<< "$mem0B/$percent")
+  [ "$result" -ge "$maximal" ] && {
+    memX=$(bc <<< "$mem0A"-"$addram")
+    virsh setmem "$i" "$memX"mb
+    }
 
-[ "$debug" = "1" ] && {
-echo "$i"
-echo "actual Kb $mem00"
-echo "usable Kb $mem01"
-echo "actual Mb $mem0A"
-echo "usable Mb $mem0B"
-echo "actual/100 $percent"
-echo "usable / (actual/100) $result"
-}
+  [ "$result" -le "$minimal" ] && {
+    memX=$(bc <<< "$mem0A"+"$addram")
+    virsh setmem "$i" "$memX"mb
+    }
 
-[ "$result" -ge "$maximal" ] && {
-memX=$(bc <<< "$mem0A"-"$addram")
-virsh setmem "$i" "$memX"mb
-}
-
-[ "$result" -le "$minimal" ] && {
-memX=$(bc <<< "$mem0A"+"$addram")
-virsh setmem "$i" "$memX"mb
-}
-
-[ "$debug" = "1" ] && {
-echo "$i"
-echo "actual Mb $memX + addram $addram"
-}
+  [ "$debug" = "1" ] && {
+    echo "VM Name: $i"
+    echo "actual: $mem00 Kb"
+    echo "usable: $mem01 Kb"
+    echo "actual: $mem0A Mb"
+    echo "usable: $mem0B Mb"
+    echo "actual/100: $percent"
+    echo "[usable / (actual/100)]: $result % of $mem0A"
+  }
 
 done
 }
