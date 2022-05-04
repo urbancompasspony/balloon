@@ -22,7 +22,15 @@ If the "usable" memory is between 25 and 35%, then everything is Ok!
 
 # Requeriments
 
-Adjust your swappiness inside VM to 10!
+1) ANY LINUX VIRTUAL MACHINES.
+Unfortunately we can't, for now, use this script on Windows VMs. Even on Windows 7, 8.1, 10 or 11.
+The script will just drop and not run over Windows detected VM, passing to another one on host.
+The problem is Windows do not alert the KVM the correct amount of buff/cache to inflate or to deflate.
+So on my tests, the script will inflate, droping the amount of RAM but can't elevate it if needed. 
+As a result, Windows will use lots os page files, being slow until freeze completely.
+Still a WIP!
+
+2) Adjust your swappiness inside VM to 10!
 Inside /etc/sysctl.conf put this line and reboot your VM:
 vm.swappiness=10
 
