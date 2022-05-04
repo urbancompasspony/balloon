@@ -45,5 +45,5 @@ Put this code where you want, give it permissions to execute and add run it 1 ti
 
 $ bash /path/to/auto-ballooning &
 
-It will start a Loop and run the code before 5 seconds to check if more or less RAM is needed!
+It will start a Loop and run the code every 2 seconds to check if more or less RAM is needed!
 Cron does not have the env variables to run this for itself. USer must run it.
