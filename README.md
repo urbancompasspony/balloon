@@ -1,9 +1,11 @@
 # auto-ballooning
 
-This code serves one purpose: 
+This code serves one simple purpose: 
 Run an auto-ballooning on QEMU/KVM virtualized systems!
+Tested on Ubuntu Server 22.04 LTS VM's but can be used with other distros.
 
 Not works with KSM.
+Not works with Windows; nothing that has Microsoft on its name! Please, do not insist.
 
 # How it works?
 
@@ -11,14 +13,23 @@ I was observing how VM's allocate RAM through virt-manager and anothers QEMU/KVM
 It let's you put an actual value to RAM and a maximum, but ballooning, the possibility to allocate RAM on live system, does not work automatically.
 You need to set this manually as demanded.
 
-This code solves this!
+This code solves this! (some)
 Analyzing from "virsh dommemstat" parameters "actual" and "usable", the code calculates what % of free memory need to be alocated to VM.
 
-I has defined 25 and 35%, a nice value, not so much, but not so low to force VM to use SWAP or going to OOM situations.
+I has defined 25 and 35%, not so much but not so low, to force VM to use SWAP or going to OOM situations.
 
 If the code detects that VM is running low "usable" memory, bellow 25%, it will increase it to between 25 and 35%.
 If the code detects that VM is running high "usable" memory, above 35%, it will decrease it to between 25 and 35%.
 If the "usable" memory is between 25 and 35%, then everything is Ok!
+
+# Emergency Stop
+
+I put a dead volume value, that is 270 Mb, safe value for generic purposes. You can change that inside the script.
+Linux generally OOM and freezes with around 230 Mb reported by virt-manager (that is 159 Mb real used inside VM).
+
+All depends of pressure under SWAP the kernel of the VM will handle (not swappiness, this is another thing!)
+For example, under some circunstances, Virt-Manager can say 340 Mb are set to VM, where 180 Mb is in use (52% os total).
+So theorically you can grab 12% of this; but if you force to 35% this will turn on OOM! Sometimes virt-manager maths are a mistery.
 
 # Requeriments
 
