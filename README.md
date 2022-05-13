@@ -52,3 +52,9 @@ If you want, you can put it on Crontab (without sudo) with:
 @reboot sleep 15; bash /path/to/auto-ballooning
 
 This method it's not guaranteed, the best behavior is running once, manually, at boot of the server!
+
+# Observations
+
+NEVER RENAME THE CODE! Use this name "balloon-2395" when running.
+The code will check itself if it is already running on "ps aux" processes, this to NEVER run more than one instance at time!
+If the code runs multiple times, on loops, it will reduce VM RAM untill Out Of Memory situations.
