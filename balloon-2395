@@ -4,40 +4,39 @@
 # By UrbanCompassPony
 
 # ---------------------------------------------------------------------------- #
-# mem00 actual - balloon
-# mem01 available = usable (What balloon can take without swap)
-# mem02 free = unused
-# mem03 total (used + free + buff/cache) = available
+# mem00 actual - what balloon has allocated to VM
+# mem01 available => usable (What balloon can take without swapping VM)
+# mem02 free = unused (What the System is not using; even buff nor cache).
+# mem03 total (used + free + buff/cache) = available (not used here)
 # ---------------------------------------------------------------------------- #
 
 # Adjust this to the minimal amount of Usable RAM
-# Default is 25
-minimal="25" # in %
+# Default is 25 - Value in %
+minimal="25"
 
 #Adjust this to the maximum amount of Usable RAM / Total
-# Default is 35
-maximal="30" # in %
+# Default is 35 - Value in %
+maximal="35"
 
 # Change this to how much dead volume will remain in RAM.
-# Default: 270 Mb, safe value for generic purposes. 
-# Linux OOM and freezes around 230 Mb (with just 159 Mb inside VM!).
-# All depends of pressure under SWAP the kernel will handle (not swappiness, this is another thing!)
-# For example, under some circunstances, Virt-Manager can say 340 Mb set to VM, where 180 Mb is in use (52% os total) so you can grab theorically 12%
-# but if force to 35% of this will turn on OOM! Sometimes virt-manager maths are a mistery.
+# Linux OOM and freezes around 230 Mb, adjust it out of production environment!
+# Default: 270 - Value in Megabytes
 critical="270"
 
 # Change this to how much RAM the Balloon gonna remove or add to VM
-# Default is 100
-addram="100" # Value in Megabytes
+# Default is 50 - Value in Megabytes
+addram="50"
 
 # Change this to a value to the loop will run the script!
-# Default is 0.5.
-secs="0.5" # Value in Seconds
+# Default is 0.5 - Value in Seconds
+secs="0.5"
 
 # Change 0 to 1 to turn ON debug mode. 
-# Remember: When set to 1, the loop will turn OFF too.
 # Default is 0
 debug="0"
+
+#####################
+# # # Functions # # #
 
 function start {
   memX=0
@@ -50,44 +49,48 @@ function start {
     mem00=$(virsh dommemstat "$i" | awk 'NR==1 { print $2 }'); mem0A=$(bc <<< "$mem00/1024")
     mem01=$(virsh dommemstat "$i" | awk 'NR==8 { print $2 }'); mem0B=$(bc <<< "$mem01/1024")
 
-    percent=$(bc <<< "$mem0A/100"); result=$(bc <<< "$mem0B/$percent")
+    percent=$(bc <<< "scale=2;$mem0A/100"); resultA=$(bc <<< "scale=2;$mem0B/$percent")
+    result=$(echo "$resultA" | cut -d "." -f1); [ "$result" = "" ] && { result=$(bc <<< "$mem0B/$percent"); }
 
     osinfo=$(virsh dumpxml "$i" | grep "microsoft" 1> /dev/null 2> /dev/null && echo "y" || echo "n")
 
     [ "$osinfo" = "n" ] && {
-      [ "$result" -ge "$maximal" ] && {
+      [ $(echo "$result > $maximal" | bc) -gt 0 ] && {
         memX=$(bc <<< "$mem0A"-"$addram")
-        [ "$memX" -le "$critical" ] && { echo "Do nothing!" > /dev/null; } || { virsh setmem "$i" "$memX"mb; }
-        }
+        [ $(echo "$memX < $critical" | bc) -gt 0 ] && {
+          [ "$debug" = "1" ] && { echo "Do nothing!"; } || { echo "A" > /dev/null; }
+        } || {
+          virsh setmem "$i" "$memX"mb
+          }
+      }
 
-      [ "$result" -le "$minimal" ] && {
-        memX=$(bc <<< "$mem0A"+"$addram")
-        virsh setmem "$i" "$memX"mb
-        }
+      [ $(echo "$result < $minimal" | bc) -gt 0 ] && { memX=$(bc <<< "$mem0A"+"$addram"); virsh setmem "$i" "$memX"mb; }
     }
+
     [ "$debug" = "1" ] && {
-      echo "VM Name: $i"
-      echo "actual: $mem00 Kb"
-      echo "usable: $mem01 Kb"
-      echo "actual: $mem0A Mb"
-      echo "usable: $mem0B Mb"
-      echo "actual/100: $percent"
-      echo "[usable / (actual/100)]: $result % of $mem0A"
-      [ "$memX" = "0" ] || { [ "$memX" -le "$critical" ] && { echo "Critical! Freezing actual value: $memX"; }; }
-      [ "$osinfo" = "y" ] && { echo "ERROR: We do not cover Windows yet. WIP!"; }
+      echo "-----------------------------------------------------"
+      echo "| VM Name: $i                                        "
+      echo "| actual: $mem00 Kb  / usable: $mem01 Kb             "
+      echo "| [usable: $mem0B Mb / ( actual: $mem0A Mb / 100 ) ] "
+      echo "| Usable is $result % of actual $mem0A!              "
+      echo "| How much the RAM is going to be: $memX Mb          "
+      echo "-----------------------------------------------------"
+      [ "$memX" = "0" ] || { [ $(echo "$memX < $critical" | bc) -gt 0 ] && {
+        echo "Critical! Freezing value: $memX"
+        }
+      }
+      
+      [ "$osinfo" = "y" ] && {
+        echo "ERROR: We do not cover Windows yet. WIP!"
+        }
       }
 
   done
   }
 }
 
-[ "$debug" = "0" ] && {
+# Starting...
 while true; do
   sleep "$secs"
   start
 done
-}
-
-[ "$debug" = "1" ] && {
-  start
-}
