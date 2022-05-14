@@ -1,42 +1,52 @@
 #!/bin/bash
 
-# auto-ballooning
-# By UrbanCompassPony
+########################
+# auto-ballooning      #
+# By UrbanCompassPony  #
+########################
 
-# ---------------------------------------------------------------------------- #
-# mem00 actual - what balloon has allocated to VM
-# mem01 available => usable (What balloon can take without swapping VM)
-# mem02 free = unused (What the System is not using; even buff nor cache).
-# mem03 total (used + free + buff/cache) = available (not used here)
-# ---------------------------------------------------------------------------- #
+##############
+# Parameters #
+##############
 
-# Adjust this to the minimal amount of Usable RAM
+# Control of minimal amount of usable RAM
 # Default is 25 - Value in %
 minimal="25"
 
-#Adjust this to the maximum amount of Usable RAM / Total
+# Control of maximum amount of Usable RAM
 # Default is 35 - Value in %
 maximal="35"
 
-# Change this to how much dead volume will remain in RAM.
-# Linux OOM and freezes around 230 Mb, adjust it out of production environment!
+# Control of Dead Volume
+# Change critical to how much will remain in RAM at lowest level.
+# Change ccritical to 0 to turn OFF Dead Volume. Debug purposes only!
 # Default: 270 - Value in Megabytes
+# Default is 1
 critical="270"
+ccontrol="0"
 
-# Change this to how much RAM the Balloon gonna remove or add to VM
+# Control of how much RAM the Balloon gonna add to VM at time.
+# Higher the value, fast RAM will increase.
+# Default is 150 - Value in Megabytes
+addram="200"
+
+# Control of how much RAM the Balloon gonna remove from VM at time.
+# Higher the value, fast RAM will decrease. Danger if high!
 # Default is 50 - Value in Megabytes
-addram="50"
+rmram="50"
 
-# Change this to a value to the loop will run the script!
+# Control of how much time loop takes to re-run!
 # Default is 0.5 - Value in Seconds
 secs="0.5"
 
-# Change 0 to 1 to turn ON debug mode. 
+# Control of Debug Mode
+# Change from 0 to 1 to turn ON!
 # Default is 0
-debug="0"
+debug="1"
 
 #####################
 # # # Functions # # #
+#####################
 
 function start {
   memX=0
@@ -56,16 +66,20 @@ function start {
 
     [ "$osinfo" = "n" ] && {
       [ $(echo "$result > $maximal" | bc) -gt 0 ] && {
-        memX=$(bc <<< "$mem0A"-"$addram")
-        [ $(echo "$memX < $critical" | bc) -gt 0 ] && {
-          [ "$debug" = "1" ] && { echo "Do nothing!"; } || { echo "A" > /dev/null; }
+        memX=$(bc <<< "$mem0A"-"$rmram")
+        [ "$ccontrol" = "1" ] && {
+          [ $(echo "$memX < $critical" | bc) -gt 0 ] && {
+            [ "$debug" = "1" ] && { echo "Do nothing!"; } || { echo "Do nothing, again!" > /dev/null;}
+          } || {
+            virsh setmem "$i" "$memX"mb
+            }
         } || {
           virsh setmem "$i" "$memX"mb
           }
       }
 
       [ $(echo "$result < $minimal" | bc) -gt 0 ] && { memX=$(bc <<< "$mem0A"+"$addram"); virsh setmem "$i" "$memX"mb; }
-    }
+        }
 
     [ "$debug" = "1" ] && {
       echo "-----------------------------------------------------"
@@ -75,15 +89,12 @@ function start {
       echo "| Usable is $result % of actual $mem0A!              "
       echo "| How much the RAM is going to be: $memX Mb          "
       echo "-----------------------------------------------------"
-      [ "$memX" = "0" ] || { [ $(echo "$memX < $critical" | bc) -gt 0 ] && {
-        echo "Critical! Freezing value: $memX"
-        }
-      }
+      [ "$memX" = "0" ] || { [ $(echo "$memX < $critical" | bc) -gt 0 ] && { echo "Critical! Freezing value: $memX"; }
+    }
       
-      [ "$osinfo" = "y" ] && {
-        echo "ERROR: We do not cover Windows yet. WIP!"
-        }
-      }
+    [ "$osinfo" = "y" ] && { echo "ERROR: We do not cover Windows yet. WIP!"; }
+    
+    }
 
   done
   }
