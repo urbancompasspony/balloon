@@ -23,7 +23,7 @@ maximal="35"
 # Default: 270 - Value in Megabytes
 # Default is 1
 critical="270"
-ccontrol="0"
+ccontrol="1"
 
 # Control of how much RAM the Balloon gonna add to VM at time.
 # Higher the value, fast RAM will increase.
@@ -42,7 +42,7 @@ secs="0.5"
 # Control of Debug Mode
 # Change from 0 to 1 to turn ON!
 # Default is 0
-debug="1"
+debug="0"
 
 #####################
 # # # Functions # # #
@@ -54,7 +54,7 @@ function start {
   [ $(which virt-manager 2>/dev/null) ] && {
 
   for i in $(virsh list --all | grep "running" | awk '{print $2}'); do
-    virsh dommemstat "$i" --period 1 
+    virsh -q dommemstat "$i" --period 1 
 
     mem00=$(virsh dommemstat "$i" | awk 'NR==1 { print $2 }'); mem0A=$(bc <<< "$mem00/1024")
     mem01=$(virsh dommemstat "$i" | awk 'NR==8 { print $2 }'); mem0B=$(bc <<< "$mem01/1024")
@@ -65,43 +65,41 @@ function start {
     osinfo=$(virsh dumpxml "$i" | grep "microsoft" 1> /dev/null 2> /dev/null && echo "y" || echo "n")
 
     [ "$osinfo" = "n" ] && {
+
       [ $(echo "$result > $maximal" | bc) -gt 0 ] && {
-        memX=$(bc <<< "$mem0A"-"$rmram")
+      memX=$(bc <<< "$mem0A"-"$rmram")
         [ "$ccontrol" = "1" ] && {
-          [ $(echo "$memX < $critical" | bc) -gt 0 ] && {
-            [ "$debug" = "1" ] && { echo "Do nothing!"; } || { echo "Do nothing, again!" > /dev/null;}
-          } || {
-            virsh setmem "$i" "$memX"mb
-            }
-        } || {
-          virsh setmem "$i" "$memX"mb
-          }
+          [ "$memX" = "0" ] || { 
+            [ $(echo "$memX < $critical" | bc) -gt 0 ] && {
+              [ "$debug" = "1" ] && { echo "Critical! Doing nothing."; } || { echo "Nothing." > /dev/null; }
+            } || { virsh -q setmem "$i" "$memX"mb; }
+          } || { virsh -q setmem "$i" "$memX"mb; }
+        }
       }
 
-      [ $(echo "$result < $minimal" | bc) -gt 0 ] && { memX=$(bc <<< "$mem0A"+"$addram"); virsh setmem "$i" "$memX"mb; }
-        }
+      [ $(echo "$result < $minimal" | bc) -gt 0 ] && { memX=$(bc <<< "$mem0A"+"$addram"); virsh -q setmem "$i" "$memX"mb; }
+    }
 
     [ "$debug" = "1" ] && {
-      echo "-----------------------------------------------------"
-      echo "| VM Name: $i                                        "
-      echo "| actual: $mem00 Kb  / usable: $mem01 Kb             "
-      echo "| [usable: $mem0B Mb / ( actual: $mem0A Mb / 100 ) ] "
-      echo "| Usable is $result % of actual $mem0A!              "
-      echo "| How much the RAM is going to be: $memX Mb          "
-      echo "-----------------------------------------------------"
-      [ "$memX" = "0" ] || { [ $(echo "$memX < $critical" | bc) -gt 0 ] && { echo "Critical! Freezing value: $memX"; }
+      [ "$osinfo" = "y" ] && {
+        echo "ERROR: We do not cover Windows yet. WIP!"
+      } || {
+        echo "-----------------------------------------------------"
+        echo "| VM Name: $i                                        "
+        echo "| actual: $mem00 Kb  / usable: $mem01 Kb             "
+        echo "| [usable: $mem0B Mb / ( actual: $mem0A Mb / 100 ) ] "
+        echo "| Usable is $result % of actual $mem0A!              "
+        echo "| How much the RAM is going to be: $memX Mb          "
+        echo "-----------------------------------------------------"    
+        [ "$memX" = "0" ] || { [ $(echo "$memX < $critical" | bc) -gt 0 ] && { echo "Critical! Freezing value: $memX"; }; }
+      }
     }
-      
-    [ "$osinfo" = "y" ] && { echo "ERROR: We do not cover Windows yet. WIP!"; }
-    
-    }
-
   done
   }
 }
 
 # Starting...
 while true; do
-  sleep "$secs"
   start
+  sleep "$secs"
 done
