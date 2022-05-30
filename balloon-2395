@@ -10,18 +10,18 @@
 ##############
 
 # Control of minimal amount of usable RAM
-# Default is 25 - Value in %
-minimal="25"
+# Default is 28 - Value in %
+minimal="28"
 
 # Control of maximum amount of Usable RAM
-# Default is 35 - Value in %
-maximal="35"
+# Default is 38 - Value in %
+maximal="38"
 
 # Control of Dead Volume
 # Change it to how much will remain in RAM at lowest level.
 # Set to 0 to disable. Debug purposes only.
-# Default: 270 - Value in Megabytes
-critical="270"
+# Default: 300 - Value in Megabytes
+critical="300"
 
 # Control of how much RAM the Balloon gonna add to VM at time.
 # Higher the value, fast RAM will increase.
