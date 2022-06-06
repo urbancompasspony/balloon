@@ -24,7 +24,7 @@ If the "usable" memory is between 28 and 38%, then everything is Ok!
 
 # Emergency Stop
 
-I put a dead volume value, that is 270 Mb, safe value for generic purposes. You can change that inside the script.
+I put a dead volume value, that is 300 Mb, safe value for generic purposes. You can change that inside the script.
 Linux generally OOM and freezes with around 230 Mb reported by virt-manager (that is 159 Mb real used inside VM).
 
 All depends of pressure under SWAP the kernel of the VM will handle (not swappiness, this is another thing!)
