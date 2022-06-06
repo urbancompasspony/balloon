@@ -59,11 +59,9 @@ $ bash /path/to/auto-ballooning &
 It will start a Loop and run the code every 0.5 seconds to check if more or less RAM is needed!
 Low time to catch any alterations. If you feel that needed, change this to something like 1 or 2 secs.
 
-If you want, you can put it on Crontab (without sudo) with:
+Also you can put it on Crontab (WITH SUDO) with:
 
-@reboot sleep 15; bash /path/to/auto-ballooning
-
-This method it's not guaranteed, the best behavior is running once, manually, at boot of the server!
+@reboot /path/to/auto-ballooning &
 
 # Observations
 
