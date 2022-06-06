@@ -16,11 +16,11 @@ You need to set this manually as demanded.
 This code solves this! (some)
 Analyzing from "virsh dommemstat" parameters "actual" and "usable", the code calculates what % of free memory need to be alocated to VM.
 
-I has defined 25 and 35%, not so much but not so low, to force VM to use SWAP or going to OOM situations.
+I has defined 28 and 38%, not so much but not so low, to force VM to use SWAP or going to OOM situations.
 
-If the code detects that VM is running low "usable" memory, bellow 25%, it will increase it to between 25 and 35%.
-If the code detects that VM is running high "usable" memory, above 35%, it will decrease it to between 25 and 35%.
-If the "usable" memory is between 25 and 35%, then everything is Ok!
+If the code detects that VM is running low "usable" memory, bellow 28%, it will increase it to between 28 and 38%.
+If the code detects that VM is running high "usable" memory, above 38%, it will decrease it to between 28 and 38%.
+If the "usable" memory is between 28 and 38%, then everything is Ok!
 
 # Emergency Stop
 
@@ -29,7 +29,7 @@ Linux generally OOM and freezes with around 230 Mb reported by virt-manager (tha
 
 All depends of pressure under SWAP the kernel of the VM will handle (not swappiness, this is another thing!)
 For example, under some circunstances, Virt-Manager can say 340 Mb are set to VM, where 180 Mb is in use (52% os total).
-So theorically you can grab 12% of this; but if you force to 35% this will turn on OOM! Sometimes virt-manager maths are a mistery.
+So theorically you can grab 12% of this; but if you force to 20% this will turn on OOM! Sometimes virt-manager maths are a mistery.
 
 # Requeriments
 
